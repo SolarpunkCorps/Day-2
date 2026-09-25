@@ -55,7 +55,7 @@ The intended order is:
 8.  `08_webcam.py`
 9.  `09_webcam_red_detection.py`
 
-An image such as `cone.jpg` can be kept in the same folder for the
+An image such as `pic1.jpg` can be kept in the same folder for the
 image-based exercises.
 
 ------------------------------------------------------------------------
@@ -102,7 +102,7 @@ window.
 Reads an image from a file and stores it as image data.
 
 The filename must point to an existing image. For example, the image
-file used in the exercise can be named `cone.jpg`.
+file used in the exercise can be named `pic1.jpg`.
 
 **`cv2.imshow()`**
 

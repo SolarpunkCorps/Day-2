@@ -24,7 +24,7 @@ Purpose: Read an image from a file and display it.
 
 What it does:
 - Imports OpenCV.
-- Loads `cone.jpg` using OpenCV.
+- Loads `pic1.jpg` using OpenCV.
 - Displays the image in an OpenCV window.
 - Waits for a keyboard input.
 - Closes the OpenCV window.
