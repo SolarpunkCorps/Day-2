@@ -1,738 +1,867 @@
-# Day 2 --- Make the Machine See
+# Day 2 — Make the Machine See
 
-This folder introduces the basic computer-vision concepts used in Day 2
-of the robotics foundation program.
+A concise, detailed quick-reference for the Day 2 OpenCV files.
 
-The learning path is:
+Learning path:
 
-**Camera / Image → OpenCV → Image Processing → Thresholding → Contours →
-Object Detection**
+**Image / Camera → OpenCV → Processing → Threshold / Mask → Contours → Bounding Box → Detection → Position**
 
-The purpose is not to start with advanced AI or YOLO. The goal is to
-understand how a computer can work with pixels and use simple vision
-techniques to locate an object.
+---
 
-------------------------------------------------------------------------
+## 0. Setup
 
-## 1. Software Setup
+### Software
 
-The examples are intended to be written and run in **VS Code**.
+- **VS Code** — write and run the Python files.
+- **Python** — programming language.
+- **OpenCV** — image/video processing and computer vision.
+- **NumPy** — numerical arrays and HSV colour ranges.
+- **Ultralytics** — required later if using YOLO object detection.
 
-The main requirements are:
+### Install
 
--   Python
--   OpenCV
--   NumPy
+```bash
+pip install opencv-python numpy
+```
 
-OpenCV provides the computer-vision functions. NumPy is used for
-numerical arrays, including the HSV colour ranges used for colour
-detection.
+For YOLO:
 
-A GPU is not required for these exercises.
+```bash
+pip install ultralytics
+```
 
-Check that Python is installed from the VS Code terminal, then install
-OpenCV and NumPy.
+### Verify
 
-To verify OpenCV, check its installed version from the terminal.
+```bash
+python --version
+```
 
-------------------------------------------------------------------------
+```bash
+python -c "import cv2; print(cv2.__version__)"
+```
 
-## 2. Folder Structure
+```bash
+python -c "import numpy; print(numpy.__version__)"
+```
 
-The Day 2 folder contains a sequence of small programs. Each file
-introduces one concept and then builds toward real-time camera-based
-detection.
+```bash
+python -c "import ultralytics; print(ultralytics.__version__)"
+```
 
-The intended order is:
+### Run a file
 
-1.  `01_test.py`
-2.  `02_read_image.py`
-3.  `03_image_processing.py`
-4.  `04_thresholding.py`
-5.  `05_contours.py`
-6.  `06_color_detection.py`
-7.  `07_red_object_detection.py`
-8.  `08_webcam.py`
-9.  `09_webcam_red_detection.py`
+```bash
+python filename.py
+```
 
-An image such as `pic1.jpg` can be kept in the same folder for the
-image-based exercises.
+Example:
 
-------------------------------------------------------------------------
+```bash
+python 01_test.py
+```
 
-# 3. `01_test.py` --- Check OpenCV
+---
 
-This is the simplest program in the folder.
+# `01_test.py` — Test OpenCV
 
-It imports OpenCV and prints the installed OpenCV version. It also
-prints a message confirming that OpenCV can be imported successfully.
+### Why?
 
-### Important lines
+- Confirms that OpenCV is installed.
+- Confirms Python can import OpenCV.
+- Prevents setup problems from appearing later.
 
-**Importing OpenCV**
+### Key lines
 
-`import cv2`
+- **`import cv2`**
+  - Loads OpenCV.
+  - `cv2` is the Python name used for OpenCV.
 
-This makes the OpenCV library available to the Python program.
+- **`cv2.__version__`**
+  - Returns the installed OpenCV version.
 
-**Checking the version**
+### Expected result
 
-`cv2.__version__`
+- OpenCV version is printed.
+- A confirmation message appears.
 
-This returns the installed OpenCV version.
+### Learn
 
-### Purpose
+**Python → OpenCV is working.**
 
-This file confirms that the Python environment and OpenCV installation
-are working before moving to image processing.
+---
 
-------------------------------------------------------------------------
+# `02_read_image.py` — Read an Image
 
-# 4. `02_read_image.py` --- Read and Display an Image
+### Why?
 
-This program introduces the basic image workflow.
+- Before processing images, first learn how to load one.
+- This is the basic OpenCV image workflow.
 
-It loads an image from the same folder and displays it in an OpenCV
-window.
+### Input
 
-### Important functions
+- `pic1.jpg`
+- Keep the image in the same folder as the Python file.
 
-**`cv2.imread()`**
+### Key functions
 
-Reads an image from a file and stores it as image data.
+- **`cv2.imread()`**
+  - Reads an image from a file.
+  - Returns image data that OpenCV can process.
 
-The filename must point to an existing image. For example, the image
-file used in the exercise can be named `pic1.jpg`.
+- **`cv2.imshow()`**
+  - Opens a window.
+  - Displays the image.
 
-**`cv2.imshow()`**
+- **`cv2.waitKey(0)`**
+  - Waits until a key is pressed.
+  - `0` means wait indefinitely.
 
-Creates a window and displays the image.
+- **`cv2.destroyAllWindows()`**
+  - Closes OpenCV windows.
 
-The first argument is the window name and the second argument is the
-image to display.
+### Flow
 
-**`cv2.waitKey(0)`**
+**Image file → `imread()` → `imshow()` → keyboard input → close**
 
-Waits indefinitely for a keyboard input. This keeps the image window
-open until a key is pressed.
+### Learn
 
-**`cv2.destroyAllWindows()`**
+An image is data that OpenCV can read, modify and display.
 
-Closes the OpenCV windows.
+---
 
-### Concept
+# `03_image_processing.py` — Basic Processing
 
-The basic flow is:
+### Why?
 
-**Image file → OpenCV reads image → OpenCV displays image**
+- Raw images are not always the easiest form to analyse.
+- We can transform an image before detecting anything.
 
-------------------------------------------------------------------------
+### Part 1 — Resize
 
-# 5. What OpenCV Sees
+- **`cv2.resize()`**
+  - Changes image width and height.
+  - Useful for making images smaller/faster to process or fitting a required size.
 
-A digital image is fundamentally numerical data.
+### Part 2 — Grayscale
 
-A colour image is made of pixels, and each pixel contains numerical
-values representing its colour.
+- **`cv2.cvtColor()`**
+  - Converts an image between colour spaces.
 
-OpenCV normally represents colour images using **BGR** order rather than
-RGB.
+- **`cv2.COLOR_BGR2GRAY`**
+  - Converts OpenCV's BGR image to grayscale.
 
-That means a colour pixel is represented conceptually as:
+### BGR
 
-**Blue, Green, Red**
+OpenCV normally stores colour as:
 
-For example, a pixel with very high red and very low blue and green
-represents red.
+**B → Blue**
 
-This becomes important when detecting colours.
+**G → Green**
 
-------------------------------------------------------------------------
+**R → Red**
 
-# 6. `03_image_processing.py` --- Basic Image Processing
+Not RGB.
 
-This file introduces simple image transformations.
+### Grayscale
 
-The first version demonstrates image resizing.
+- Colour image → 3 colour channels.
+- Grayscale → 1 brightness/intensity channel.
+- `0` → black.
+- `255` → white.
 
-### `cv2.resize()`
+### Why grayscale?
 
-Resizes an image to a specified width and height.
+- Removes colour information.
+- Simplifies many later operations.
+- Useful for intensity-based processing.
 
-This is an example of image processing because the original image data
-is transformed into a new representation.
+### Flow
 
-The program displays both the original and resized images so the
-difference can be observed.
+**BGR image → resize / grayscale → processed image**
 
-------------------------------------------------------------------------
+### Learn
 
-## Grayscale Conversion
+Different image representations are useful for different vision tasks.
 
-The same file can also demonstrate conversion from colour to grayscale.
+---
 
-### `cv2.cvtColor()`
+# `04_thresholding.py` — Thresholding
 
-Converts an image from one colour representation to another.
+### Why?
 
-### `cv2.COLOR_BGR2GRAY`
+- We want to separate pixels into useful regions.
+- A binary image is easier to analyse than a full grayscale image for some tasks.
 
-Tells OpenCV to convert the image from BGR colour into grayscale.
+### Key function
 
-A colour image has three colour channels:
-
-**Blue + Green + Red**
-
-A grayscale image has one intensity channel representing brightness.
-
-Typically:
-
-**0 = black**
-
-**255 = white**
-
-Grayscale images are useful because many image-processing operations
-become simpler when colour information is removed.
-
-------------------------------------------------------------------------
-
-# 7. `04_thresholding.py` --- Thresholding
-
-Thresholding separates pixels according to their intensity.
-
-A simple binary threshold can be understood as:
-
-**Pixel below the chosen threshold → black**
-
-**Pixel at or above the threshold → white**
-
-### `cv2.threshold()`
-
-Performs thresholding on an image.
-
-The grayscale image is used as the input because the threshold is based
-on pixel intensity.
-
-The important parameters represent:
-
--   The input grayscale image
--   The threshold value
--   The maximum value assigned to pixels that pass the threshold
--   The thresholding method
+- **`cv2.threshold()`**
+  - Compares each pixel with a threshold value.
+  - Produces a new thresholded image.
 
 ### `cv2.THRESH_BINARY`
 
-Creates a binary image consisting of black and white regions.
+Creates two basic regions:
 
-### Why thresholding is useful
+- One side of threshold → black.
+- Other side → white.
 
-Suppose an object is visually different from its background.
-Thresholding can sometimes produce an image where:
+Conceptually:
+
+**Pixel < threshold → black**
+
+**Pixel ≥ threshold → white**
+
+### Parameters
+
+The threshold operation uses:
+
+- Input grayscale image.
+- Threshold value.
+- Maximum output value.
+- Thresholding method.
+
+### Why?
+
+A useful result can look like:
 
 **Object → white**
 
 **Background → black**
 
-This makes the object easier to locate with later operations such as
-contour detection.
+This makes later contour detection easier.
 
-Thresholding is highly dependent on lighting and the chosen threshold
-value, so it does not work equally well in every environment.
+### Limitation
 
-------------------------------------------------------------------------
+Thresholding is affected by:
 
-# 8. `05_contours.py` --- Finding Boundaries
+- Lighting.
+- Shadows.
+- Contrast.
+- Selected threshold value.
 
-A contour represents the boundary of a connected region in an image.
+### Flow
 
-The program first creates a thresholded image and then searches for
-contours in it.
+**Grayscale → threshold → binary image**
 
-### `cv2.findContours()`
+### Learn
 
-Searches an image for contours.
+Thresholding turns continuous intensity information into simpler regions.
 
-The thresholded image is supplied as the input.
+---
 
-### `cv2.RETR_EXTERNAL`
+# `05_contours.py` — Find Boundaries
 
-Tells OpenCV to retrieve only the outermost contours.
+### Why?
 
-This is useful when the goal is to find the external boundary of objects
-rather than every possible nested boundary.
+- After thresholding, we have regions.
+- We need to identify the boundaries of those regions.
 
-### `cv2.CHAIN_APPROX_SIMPLE`
+### Key function
 
-Compresses contour information by removing unnecessary points while
-preserving the overall contour shape.
+- **`cv2.findContours()`**
+  - Searches for boundaries of connected regions.
 
-### `len(contours)`
+### Important options
 
-Returns the number of contours that were found.
+- **`cv2.RETR_EXTERNAL`**
+  - Retrieves outermost contours.
+  - Useful when internal/nested contours are not needed.
 
-### `cv2.contourArea()`
+- **`cv2.CHAIN_APPROX_SIMPLE`**
+  - Removes unnecessary contour points.
+  - Keeps the basic contour shape.
 
-Calculates the area enclosed by a contour.
+### Count contours
 
-The area is useful for filtering out very small regions that may be
-caused by noise.
+- **`len(contours)`**
+  - Tells how many contours were found.
 
-### `cv2.drawContours()`
+### Measure contours
 
-Draws the detected contours on the image so they can be visualized.
+- **`cv2.contourArea()`**
+  - Calculates the area inside a contour.
+  - Useful for deciding whether a region is large enough to matter.
 
-------------------------------------------------------------------------
+### Display contours
 
-# 9. Bounding Boxes
+- **`cv2.drawContours()`**
+  - Draws the detected boundaries on the image.
 
-After detecting a contour, a rectangle can be drawn around it.
+### Flow
 
-### `cv2.boundingRect()`
+**Binary image → contours → boundaries**
 
-Calculates a rectangular boundary around a contour.
+### Learn
 
-It provides four values:
+A contour describes the boundary of a connected image region.
 
--   **x** --- horizontal position of the left edge
--   **y** --- vertical position of the top edge
--   **w** --- width of the rectangle
--   **h** --- height of the rectangle
+---
+
+# Bounding Boxes — Locate a Region
+
+This concept is used with contour detection.
+
+### `cv2.boundingRect(contour)`
+
+Returns:
+
+- **`x`** → left position.
+- **`y`** → top position.
+- **`w`** → width.
+- **`h`** → height.
 
 ### `cv2.rectangle()`
 
-Draws the rectangle on the image.
-
-A common workflow is:
-
-**Contour → Bounding rectangle → Visual location of object**
+- Draws the rectangle.
+- Useful for showing where the detected region is.
 
 ### Area filtering
 
-The contour area can be checked before drawing a bounding box.
+Example concept:
 
-For example, requiring an area greater than a chosen value prevents very
-small contours from being treated as objects.
+**If area > selected value → keep region**
 
-This is a simple form of noise filtering.
+**Otherwise → ignore it**
 
-------------------------------------------------------------------------
+### Why?
 
-# 10. `06_color_detection.py` --- Detecting a Colour
+- Removes tiny regions.
+- Reduces noise.
+- Prevents every tiny contour from being treated as an object.
 
-This file introduces colour-based computer vision.
+### Flow
 
-Instead of converting the image to grayscale, the image is converted to
-the **HSV colour space**.
+**Contour → area check → bounding rectangle → visual object location**
 
-## HSV
+---
 
-HSV represents colour using:
+# `06_color_detection.py` — Detect a Colour
 
--   **H --- Hue**
--   **S --- Saturation**
--   **V --- Value**
+### Why?
 
-Hue represents the basic colour.
+- Grayscale uses brightness.
+- Sometimes we specifically need colour information.
+- HSV is convenient for colour-based detection.
 
-Saturation represents how strong or pure the colour is.
+### HSV
 
-Value represents brightness.
+**H — Hue**
+- Basic colour.
 
-HSV is often convenient for colour detection because colour information
-is separated from brightness more clearly than in BGR.
+**S — Saturation**
+- Colour strength/purity.
 
-### `cv2.COLOR_BGR2HSV`
+**V — Value**
+- Brightness.
 
-Converts an OpenCV BGR image into HSV.
+### Key conversion
 
-### `np.array()`
+- **`cv2.cvtColor()`**
+  - Converts the image.
 
-Creates numerical arrays containing the lower and upper limits of the
-desired HSV range.
+- **`cv2.COLOR_BGR2HSV`**
+  - BGR → HSV.
 
-### `cv2.inRange()`
+### Define a colour range
 
-Checks every pixel against the selected HSV range.
-
-Pixels inside the selected range become white in the mask.
-
-Pixels outside the range become black.
-
-The result is called a **mask**.
+- **`np.array()`**
+  - Stores numerical lower/upper limits.
 
 Conceptually:
 
-**Matching colour → white**
+**Lower HSV limit → allowed range → Upper HSV limit**
 
-**Other colours → black**
+### Create mask
 
-------------------------------------------------------------------------
+- **`cv2.inRange()`**
+  - Checks every pixel.
+  - Inside range → white.
+  - Outside range → black.
 
-# 11. Why Red Requires Two HSV Ranges
+### Mask
 
-Red is located at both ends of OpenCV's HSV hue scale.
+A mask is an image showing where the selected condition is true.
 
-Therefore, detecting red can require two hue ranges:
+**White = selected**
 
-**Lower red range → near hue 0**
+**Black = not selected**
 
-**Upper red range → near hue 179**
+### Why?
 
-The two masks can then be combined.
+Now the computer has a simple map of where the selected colour appears.
 
-This is important because using only the lower red range may miss some
-red pixels.
+### Flow
 
-The exact HSV limits are not universal. Camera characteristics,
-lighting, shadows, white balance, fabric, and the particular shade of
-red can change the values produced by the camera.
+**BGR → HSV → colour range → mask**
 
-For that reason, a colour detector may need its HSV limits adjusted for
-the environment.
+---
 
-------------------------------------------------------------------------
+# Why Red Uses Two Ranges
 
-# 12. `07_red_object_detection.py` --- Red Object + Contours
+Red is special in OpenCV's HSV hue scale.
 
-This program combines the previous concepts.
+Red occurs near both ends:
 
-The processing pipeline is:
+- **Near hue 0**
+- **Near hue 179**
 
-**Image → BGR to HSV → Red mask → Contours → Area filtering → Bounding
-box → Label**
+Therefore, red detection can use:
 
-The image is first converted to HSV.
+**Range 1 → low hue red**
 
-A red colour range is selected.
+**Range 2 → high hue red**
 
-A mask is generated.
+Then the two masks are combined.
 
-Contours are detected from the mask.
+### Why?
 
-Small contours can be ignored using an area threshold.
+Using only one red range can miss some red pixels.
 
-A bounding rectangle is then created around the remaining contour.
+### Important
 
-### `cv2.putText()`
+HSV values are not universal.
 
-Places text on an image.
+They change with:
 
-It can be used to label the detected region as a red object.
+- Lighting.
+- Shadows.
+- Camera exposure.
+- White balance.
+- Exact shade of red.
+- Reflections.
+- Background.
 
-### Important idea
+So HSV ranges may need calibration.
+
+---
+
+# `07_red_object_detection.py` — Red Object
+
+### Why?
+
+This combines several previous concepts into one detector.
+
+### Pipeline
+
+**Image → HSV → red mask → contours → area filter → bounding box → label**
+
+### Key components
+
+- **`cv2.inRange()`**
+  - Creates the red mask.
+
+- **`cv2.findContours()`**
+  - Finds connected red regions.
+
+- **`cv2.contourArea()`**
+  - Measures each region.
+
+- **`cv2.boundingRect()`**
+  - Gets object position and size.
+
+- **`cv2.rectangle()`**
+  - Draws the detection box.
+
+- **`cv2.putText()`**
+  - Adds the `Red Object` label.
+
+### Why area filtering?
+
+- Removes tiny noise.
+- Keeps larger candidate regions.
+
+### Important
 
 This is **classical computer vision**.
 
-It is not machine learning, deep learning, or YOLO.
+It is not:
 
-The program is not understanding the object semantically. It is finding
-image regions whose pixels match the selected colour criteria.
+- Machine learning.
+- Deep learning.
+- YOLO.
 
-------------------------------------------------------------------------
+The program does not know that something is a shirt, phone or person.
 
-# 13. `08_webcam.py` --- Read a Live Camera
+It knows only:
 
-This file changes the input from a saved image to a live camera.
+**"These pixels match my red criteria."**
 
-### `cv2.VideoCapture(0)`
+### Learn
 
-Opens the default camera.
+**Colour + contour + bounding box = simple object detector**
 
-The number `0` normally refers to the first available camera. Other
-camera devices may have different indexes.
+---
 
-### `camera.read()`
+# `08_webcam.py` — Live Camera
 
-Reads the next frame from the camera.
+### Why?
 
-It provides:
+A robot usually receives a continuous camera stream, not one saved image.
 
--   A success value
--   The captured frame
+### Key function
 
-The success value is checked before processing the frame.
+- **`cv2.VideoCapture(0)`**
+  - Opens the default camera.
+  - `0` usually means the first camera.
 
-### `while True`
+### Read frame
 
-Creates a continuous loop so that frames can be captured repeatedly.
+- **`camera.read()`**
+  - Captures the next frame.
+  - Returns:
+    - Success/failure status.
+    - Frame image.
 
-A camera produces a sequence of frames rather than a single image.
+### Check success
 
-### `cv2.imshow()`
+- If the frame was not captured:
+  - Print an error.
+  - Stop the loop.
 
-Displays the current frame.
+### Continuous processing
 
-### `cv2.waitKey(1)`
+- **`while True`**
+  - Repeats frame capture.
+  - Each loop processes one frame.
 
-Waits briefly for keyboard input while allowing the next frame to be
-processed.
+### Display
 
-Checking for the `q` key allows the user to exit the loop.
+- **`cv2.imshow()`**
+  - Shows the current frame.
 
-### `camera.release()`
+### Keyboard
 
-Releases the camera after the loop ends.
+- **`cv2.waitKey(1)`**
+  - Waits briefly.
+  - Allows the window to update.
+  - Checks for key input.
 
-### `cv2.destroyAllWindows()`
+- **`ord("q")`**
+  - Converts `q` into a value that can be compared with the keyboard result.
 
-Closes the OpenCV windows.
+### Cleanup
 
-------------------------------------------------------------------------
+- **`camera.release()`**
+  - Gives the camera back to the system.
 
-# 14. Camera Mirroring
+- **`cv2.destroyAllWindows()`**
+  - Closes OpenCV windows.
 
-The camera feed may appear mirrored.
+### Flow
 
-This is common with front-facing webcams and does not mean the camera
-hardware is malfunctioning.
+**Camera → frame → display → next frame → repeat**
 
-If an unmirrored view is required, the frame can be horizontally flipped
-before displaying or processing it.
+---
 
-### `cv2.flip(frame, 1)`
+# Camera Mirroring
 
-The second argument specifies a horizontal flip.
+The webcam may appear mirrored.
 
-The important distinction is:
+### Why?
 
-**Displaying a mirrored image is a visual transformation.**
+Front-facing cameras are commonly displayed like a mirror.
 
-It does not mean that OpenCV has changed the actual object or understood
-the scene incorrectly.
+### Fix
 
-For robotics applications, left/right orientation should be handled
-deliberately because it can affect decisions such as turning left or
-right.
+- **`cv2.flip(frame, 1)`**
+  - Flips the frame horizontally.
 
-------------------------------------------------------------------------
+### Important
 
-# 15. `09_webcam_red_detection.py` --- Real-Time Red Object Detection
+Mirroring is only a visual transformation.
 
-This is the main exercise that combines the concepts from the previous
-files.
+It does not mean OpenCV is detecting the wrong object.
 
-The processing pipeline is:
+For robotics, left/right orientation matters because it can affect movement decisions.
 
-**Camera → Frame → HSV → Red Mask → Contours → Area Filter → Bounding
-Box → Label**
+---
 
-The camera continuously supplies frames.
+# `09_webcam_red_detection.py` — Real-Time Red Detection
 
-Each frame is converted from BGR to HSV.
+### Why?
 
-The selected red ranges are used to create a mask.
+This combines:
 
-Contours are detected from the mask.
+- Webcam input.
+- HSV conversion.
+- Red detection.
+- Masking.
+- Contours.
+- Area filtering.
+- Bounding boxes.
 
-Small contours are ignored.
+### Pipeline
 
-A bounding box is drawn around detected red regions.
+**Camera → Frame → HSV → Red Mask → Contours → Area Filter → Bounding Box → Label**
 
-The original camera frame and the mask can both be displayed.
+### Step 1 — Camera
 
-### Two useful windows
+- Open webcam.
+- Read each frame.
+
+### Step 2 — Mirror correction
+
+- Horizontally flip the frame if desired.
+
+### Step 3 — HSV
+
+- Convert BGR → HSV.
+
+### Step 4 — Red ranges
+
+- Define low-hue red range.
+- Define high-hue red range.
+
+### Step 5 — Masks
+
+- Create `mask1`.
+- Create `mask2`.
+
+### Step 6 — Combine
+
+- Combine both masks.
+- Result contains both red ranges.
+
+### Step 7 — Contours
+
+- Find connected regions in the mask.
+
+### Step 8 — Area filter
+
+- Ignore small regions.
+- Keep larger candidate regions.
+
+### Step 9 — Bounding box
+
+- Find `x, y, w, h`.
+- Draw rectangle.
+
+### Step 10 — Label
+
+- Add `RED` using `cv2.putText()`.
+
+### Two windows
 
 **Camera**
+- Original camera view.
+- Detection box.
+- Label.
 
-Shows the original camera image with the detection box and label.
+**Red Mask**
+- White = detected red.
+- Black = not detected.
 
-**Mask**
+### Why the mask is important
 
-Shows what the colour detector is actually selecting.
+Use it for debugging.
 
-The mask is particularly useful for debugging.
+If your red shirt is not detected:
 
-If the red shirt is not being detected, the mask helps determine whether
-the problem is the colour range, lighting, or another part of the
-processing pipeline.
+**Shirt black in mask**
+→ HSV range may not match.
 
-------------------------------------------------------------------------
+**Shirt white + many unrelated areas white**
+→ HSV range may be too broad.
 
-# 16. Why a Red Shirt May Not Be Detected
+### Learn
 
-A program cannot simply understand that a shirt is "red."
+**Camera → vision processing → detected region**
 
-It checks numerical pixel values.
+---
 
-The actual HSV values produced by a camera can change because of:
+# Why a Red Shirt May Not Be Detected
 
--   Lighting
--   Shadows
--   Camera exposure
--   White balance
--   The exact shade of red
--   Reflections
--   Background colours
+The program does not understand the word "red."
 
-Therefore, the selected HSV range may need adjustment.
+It compares pixel numbers.
 
-A good way to understand this is to watch the mask.
+Camera values change because of:
 
-If the shirt remains black in the mask, its pixels are outside the
-selected HSV range.
+- Lighting.
+- Shadows.
+- Exposure.
+- White balance.
+- Fabric colour.
+- Reflections.
+- Background.
 
-If the shirt becomes white but other objects also become white, the
-range may be too broad.
+### Therefore
 
-This demonstrates an important principle of computer vision:
+HSV thresholds often need adjustment.
 
-**Detection quality depends on the representation and criteria used to
-separate an object from its surroundings.**
+### Key idea
 
-------------------------------------------------------------------------
+**Computer vision detection depends on how the image is represented and what numerical criteria are selected.**
 
-# 17. Finding the Object's Centre
+---
 
-Once a bounding rectangle provides:
+# Finding the Object Centre
 
-**x, y, w, h**
+Once we have:
 
-the centre of the detected region can be calculated.
+**`x, y, w, h`**
 
-The horizontal centre is:
+we can estimate the centre.
 
-**x + width / 2**
+### Horizontal centre
 
-The vertical centre is:
+**`x + w / 2`**
 
-**y + height / 2**
+### Vertical centre
 
-In the Python implementation, integer division can be used so that the
-resulting pixel coordinates are integers.
+**`y + h / 2`**
 
-The centre gives the object's approximate position within the camera
-frame.
+In Python, integer division can be used when integer pixel coordinates are required.
 
-This is the beginning of connecting computer vision to robot control.
+### Why?
 
-------------------------------------------------------------------------
+The centre tells us where the detected object is inside the camera frame.
 
-# 18. From Vision to Robot Movement
+That information can later control a robot.
 
-Suppose the camera image is divided into three horizontal regions:
+---
 
-**LEFT \| CENTER \| RIGHT**
+# From Vision to Robot Movement
 
-The detected object's centre can then be compared with these regions.
+Divide the camera view into:
 
-A simple future control concept could be:
+**LEFT | CENTER | RIGHT**
 
-**Object on left → turn left**
+Then compare the object's centre with these regions.
 
-**Object in centre → move forward**
+Example control logic:
 
-**Object on right → turn right**
+**Object left → turn left**
 
-The complete conceptual pipeline becomes:
+**Object centre → move forward**
 
-**Camera → OpenCV → Find object → Calculate centre → Determine position
-→ Motor command**
+**Object right → turn right**
 
-This is the bridge between computer vision and robotics.
+### Full robotics idea
 
-The Day 2 exercises stop before actual motor control. The objective here
-is to understand the vision side first.
+**Camera → OpenCV → Find object → Centre → Position → Motor command**
 
-------------------------------------------------------------------------
+This is the bridge between computer vision and robot control.
 
-# 19. Important OpenCV Functions Used
+---
 
-### `cv2.imread()`
+# `10_yolo_object_detection.py` — AI Object Detection
 
-Reads an image from a file.
+If this file is included in the Day 2 folder, it introduces the next level after colour-based detection.
 
-### `cv2.imshow()`
+### Why?
 
-Displays an image or video frame.
+The red detector asks:
 
-### `cv2.waitKey()`
+**"Where are pixels that look red?"**
 
-Waits for keyboard input and allows OpenCV windows to update.
+YOLO asks:
 
-### `cv2.destroyAllWindows()`
+**"Which learned object category is present, where is it, and how confident is the model?"**
 
-Closes OpenCV windows.
+### Install
 
-### `cv2.resize()`
+```bash
+pip install ultralytics
+```
 
-Changes image dimensions.
+### Key components
 
-### `cv2.cvtColor()`
+- **`from ultralytics import YOLO`**
+  - Imports the YOLO interface.
 
-Converts an image between colour representations.
+- **`YOLO(...)`**
+  - Loads a pretrained model.
 
-### `cv2.threshold()`
+- **`model(frame)`**
+  - Sends the camera frame through the neural network.
 
-Creates a thresholded image based on pixel intensity.
+- **`results[0].plot()`**
+  - Creates an annotated frame.
 
-### `cv2.findContours()`
+### Detection information
 
-Finds boundaries of connected regions.
+A YOLO detection can provide:
 
-### `cv2.contourArea()`
+**Class**
+- Example: person, bottle, phone, chair.
 
-Calculates the area of a contour.
+**Bounding box**
+- Object location and size.
 
-### `cv2.boundingRect()`
+**Confidence**
+- Numerical confidence associated with the detection.
 
-Calculates a rectangular boundary around a contour.
+### Classical vs AI
 
-### `cv2.rectangle()`
+**Classical**
 
-Draws a rectangle.
+Image → Colour / Threshold → Mask → Contour → Box
 
-### `cv2.drawContours()`
+**YOLO**
 
-Draws contours.
+Image → Neural network → Class + Confidence + Box
 
-### `cv2.putText()`
+### Important limitation
 
-Writes text on an image.
+YOLO does not automatically detect every possible object.
 
-### `cv2.VideoCapture()`
+It can detect the categories included in its training data.
 
-Opens a camera or video source.
+Also:
 
-### `camera.read()`
+**Person detection ≠ dedicated face detection ≠ face recognition**
 
-Captures a frame from the camera.
+These are different computer-vision tasks.
 
-### `camera.release()`
+---
 
-Releases the camera.
+# Important Functions — Quick Reference
 
-### `cv2.flip()`
+| Function | What it does | Why it matters |
+|---|---|---|
+| `cv2.imread()` | Reads image | Gets image into Python |
+| `cv2.imshow()` | Displays image | Visualise result |
+| `cv2.waitKey()` | Reads keyboard input | Controls windows/exit |
+| `cv2.destroyAllWindows()` | Closes windows | Cleanup |
+| `cv2.resize()` | Resizes image | Changes image dimensions |
+| `cv2.cvtColor()` | Changes colour space | BGR → Gray/HSV |
+| `cv2.threshold()` | Thresholds pixels | Creates binary regions |
+| `cv2.findContours()` | Finds boundaries | Locates regions |
+| `cv2.contourArea()` | Finds contour area | Filters regions |
+| `cv2.boundingRect()` | Finds rectangle | Locates object |
+| `cv2.rectangle()` | Draws rectangle | Visualises detection |
+| `cv2.drawContours()` | Draws contours | Visualises boundaries |
+| `cv2.putText()` | Writes text | Adds labels |
+| `cv2.inRange()` | Creates mask | Selects pixel range |
+| `cv2.VideoCapture()` | Opens camera | Gets live input |
+| `camera.read()` | Gets next frame | Processes video |
+| `camera.release()` | Releases camera | Cleanup |
+| `cv2.flip()` | Flips image | Corrects mirror view |
 
-Flips an image, such as horizontally for correcting a mirrored camera
-view.
+---
 
-### `cv2.inRange()`
+# Complete Day 2 Pipeline
 
-Creates a mask by selecting pixels inside a specified numerical range.
-
-------------------------------------------------------------------------
-
-# 20. The Complete Day 2 Pipeline
-
-The concepts introduced in this folder can be summarized as:
+### Classical computer vision
 
 **Image / Camera**
 
 ↓
 
-**OpenCV reads the image**
+**OpenCV reads frame**
 
 ↓
 
-**Image Processing**
+**BGR**
 
 ↓
 
-**Grayscale or HSV conversion**
+**Grayscale or HSV**
 
 ↓
 
-**Thresholding or Colour Mask**
+**Threshold or colour mask**
 
 ↓
 
@@ -740,121 +869,109 @@ The concepts introduced in this folder can be summarized as:
 
 ↓
 
-**Object Location**
+**Area filtering**
 
 ↓
 
-**Bounding Box**
+**Bounding box**
 
 ↓
 
-**Object Centre**
+**Object centre**
 
 ↓
 
-**Possible Robot Decision**
+**Possible robot decision**
 
-The two broad approaches introduced here are:
+### AI-based vision
 
-### Classical Computer Vision
-
-**Image → Threshold / Colour Mask → Contour → Object**
-
-This is what the Day 2 exercises primarily use.
-
-### AI-Based Computer Vision
-
-**Image → Neural Network / YOLO → Object + Class + Confidence**
-
-AI-based detection is a later topic. Understanding the classical
-pipeline first makes it easier to understand what an object detector is
-actually doing at a higher level.
-
-------------------------------------------------------------------------
-
-# 21. Recommended Practice Order
-
-Work through the files in this order:
-
-**01_test.py**
-
-Verify that OpenCV works.
+**Camera**
 
 ↓
 
-**02_read_image.py**
-
-Learn how OpenCV reads and displays an image.
+**Frame**
 
 ↓
 
-**03_image_processing.py**
-
-Learn resizing and grayscale conversion.
+**YOLO**
 
 ↓
 
-**04_thresholding.py**
+**Object class**
 
-Learn how pixels can be separated using intensity.
++
 
-↓
+**Confidence**
 
-**05_contours.py**
++
 
-Learn how boundaries can be extracted from a binary image.
+**Bounding box**
 
-↓
+---
 
-**06_color_detection.py**
+# Practice Order
 
-Learn HSV and colour masks.
+1. **`01_test.py`**
+   - Verify OpenCV.
 
-↓
+2. **`02_read_image.py`**
+   - Read and display an image.
 
-**07_red_object_detection.py**
+3. **`03_image_processing.py`**
+   - Resize and convert to grayscale.
 
-Combine colour detection with contours and bounding boxes.
+4. **`04_thresholding.py`**
+   - Create a binary image.
 
-↓
+5. **`05_contours.py`**
+   - Find region boundaries.
 
-**08_webcam.py**
+6. **`06_color_detection.py`**
+   - Create an HSV colour mask.
 
-Learn how to process a live camera stream.
+7. **`07_red_object_detection.py`**
+   - Detect a red region.
 
-↓
+8. **`08_webcam.py`**
+   - Read live camera frames.
 
-**09_webcam_red_detection.py**
+9. **`09_webcam_red_detection.py`**
+   - Detect red in real time.
 
-Combine the complete pipeline in real time.
+10. **`10_yolo_object_detection.py`**
+   - Detect learned object categories using AI.
 
-------------------------------------------------------------------------
+---
 
-# 22. What You Should Know After Day 2
+# Day 2 — What You Should Understand
 
-You do not need to memorize every OpenCV function.
+- **OpenCV** — library for image/video processing.
+- **Pixel** — numerical representation of image information.
+- **BGR** — OpenCV's common colour representation.
+- **Grayscale** — brightness-only image.
+- **Threshold** — separates pixels using intensity.
+- **Binary image** — simplified black/white image.
+- **Contour** — boundary of a connected region.
+- **Area** — size of a contour.
+- **Bounding box** — rectangle around a detected region.
+- **HSV** — colour representation useful for colour detection.
+- **Mask** — black/white selection of pixels.
+- **Webcam frame** — one image from a live camera stream.
+- **YOLO** — pretrained neural-network object detector.
+- **Confidence** — model's numerical confidence for a detection.
 
-You should be able to explain:
+### Final mental model
 
--   What OpenCV is.
--   How an image is represented as numerical pixel data.
--   Why OpenCV commonly uses BGR.
--   What grayscale means.
--   What thresholding does.
--   What a binary image is.
--   What a contour represents.
--   What a bounding box represents.
--   Why contour area can be used to filter noise.
--   What HSV represents.
--   Why HSV is useful for colour detection.
--   What a mask is.
--   Why red can require two HSV ranges.
--   How OpenCV reads frames from a webcam.
--   Why a webcam image may appear mirrored.
--   How a detected object's centre can be calculated.
--   How object position can eventually be converted into a robot
-    movement decision.
+**Camera / Image**
 
-The main goal is to understand the pipeline rather than memorize syntax.
+→ **Pixels**
 
-**Camera / Image → Pixels → Processing → Detection → Position → Decision**
+→ **Processing**
+
+→ **Detection**
+
+→ **Position**
+
+→ **Decision**
+
+That is the foundation for connecting computer vision to robotics.
