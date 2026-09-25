@@ -1,6 +1,18 @@
 # Day 2 — Make the Machine See
 
-This README explains each Python file in the order it is used, including why the file exists, what its important components do, and what concept it teaches.
+<div align="left">
+
+[![Python](https://img.shields.io/badge/Python-3.13.0-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-5.0.0-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
+[![NumPy](https://img.shields.io/badge/NumPy-2.1.3-013243?logo=numpy&logoColor=white)](https://numpy.org/)
+[![Ultralytics](https://img.shields.io/badge/Ultralytics-8.4.162-00A4EF?logo=ultralytics&logoColor=white)](https://ultralytics.com/)
+[![MediaPipe](https://img.shields.io/badge/MediaPipe-1.0.1-00BFA5?logo=google&logoColor=white)](https://mediapipe.dev/)
+[![Platform](https://img.shields.io/badge/Platform-Windows_11-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows/)
+[![IDE](https://img.shields.io/badge/IDE-VS_Code-007ACC?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
+
+</div>
+
+This project is built and tested with Python 3.13.0 and the libraries used in this workshop: OpenCV 5.0.0, NumPy 2.1.3, Ultralytics 8.4.162, and MediaPipe 1.0.1. This README explains each Python file in the order it is used, including why the file exists, what its important components do, and what concept it teaches.
 
 ## 0. Setup — Before Running the Files
 
@@ -28,6 +40,12 @@ Before `10_yolo_object_detection.py`, install Ultralytics:
 
 ```bash
 pip install ultralytics
+```
+
+Before `12_hand_tracking.py`, install MediaPipe:
+
+```bash
+pip install mediapipe
 ```
 
 Useful commands:
@@ -455,6 +473,14 @@ Run and understand the files in this order:
 
 `10_yolo_object_detection.py`
 
+↓
+
+`11_object_distance_estimation.py`
+
+↓
+
+`12_hand_tracking.py`
+
 The progression is:
 
 **OpenCV setup**
@@ -490,3 +516,167 @@ The AI-based part follows:
 **Camera → Frame → YOLO Neural Network → Object Class + Confidence + Bounding Box**
 
 The objective is to understand how these two approaches differ before moving toward more advanced robotics vision systems.
+
+---
+
+# `11_object_distance_estimation.py`
+
+**Purpose:** Estimate the distance to a detected phone using YOLO and a simple camera-distance formula.
+
+**Why:** Once an object is detected, we can also estimate how far away it is by comparing its pixel width with a known real-world width.
+
+**What it does:**
+- Loads YOLO.
+- Opens the webcam.
+- Detects objects.
+- Keeps only `cell phone` detections.
+- Measures the phone width in pixels.
+- Uses a known phone width and focal length to estimate the distance.
+- Draws a bounding box and displays the estimated distance on the frame.
+
+**Key components:**
+
+`YOLO(...)` — loads the pretrained detection model.
+
+`box.xyxy[0].tolist()` — gets the bounding box coordinates.
+
+`pixel_width = x2 - x1` — calculates the object width in pixels.
+
+`KNOWN_WIDTH` — the real width of the object in centimetres.
+
+`FOCAL_LENGTH` — a camera constant used for distance estimation.
+
+`cv2.putText()` — displays the estimated distance on the image.
+
+**Main concept:** Detected object → pixel size → camera geometry → estimated distance.
+
+---
+
+# `12_hand_tracking.py`
+
+**Purpose:** Track hands in real time using MediaPipe.
+
+**Why:** Hand tracking is used in gesture control, sign-language recognition, AR interaction, and touchless interfaces.
+
+**What it does:**
+- Opens the webcam.
+- Creates a MediaPipe Hand Landmarker.
+- Converts each frame to RGB.
+- Detects hand landmarks.
+- Draws green circles for each landmark.
+- Connects joints with lines to form a hand skeleton.
+- Displays the result until `q` is pressed.
+
+**Key components:**
+
+`mp.tasks.vision.HandLandmarker` — loads the hand detection model.
+
+`mp.Image(...)` — converts the OpenCV frame into MediaPipe image data.
+
+`landmarker.detect_for_video(...)` — detects hands in each frame.
+
+`hand_landmarks` — stores the 21 key points of each detected hand.
+
+`cv2.circle()` — draws each landmark.
+
+`cv2.line()` — draws connections between the joints.
+
+**Main concept:** Camera frame → hand landmarks → tracked joints → gesture and interaction data.
+
+---
+
+# File Order
+
+Run and understand the files in this order:
+
+`01_test.py`
+
+↓
+
+`02_read_image.py`
+
+↓
+
+`03_image_processing.py`
+
+↓
+
+`04_thresholding.py`
+
+↓
+
+`05_contours.py`
+
+↓
+
+`06_color_detection.py`
+
+↓
+
+`07_red_object_detection.py`
+
+↓
+
+`08_webcam.py`
+
+↓
+
+`09_webcam_red_detection.py`
+
+↓
+
+`10_yolo_object_detection.py`
+
+↓
+
+`11_object_distance_estimation.py`
+
+↓
+
+`12_hand_tracking.py`
+
+The progression is:
+
+**OpenCV setup**
+
+→ Read an image
+
+→ Process an image
+
+→ Grayscale
+
+→ Thresholding
+
+→ Contours
+
+→ Colour detection
+
+→ Red-object detection
+
+→ Webcam
+
+→ Real-time red detection
+
+→ AI-based object detection
+
+→ Distance estimation
+
+→ Hand tracking
+
+# Day 2 Overall Concept
+
+The classical computer-vision part follows:
+
+**Image / Camera → Pixels → Processing → Threshold / Colour Mask → Contours → Bounding Box → Object Location**
+
+The AI-based part follows:
+
+**Camera → Frame → YOLO Neural Network → Object Class + Confidence + Bounding box**
+
+The advanced part follows:
+
+**Camera → Detection → Size / Geometry → Distance estimate**
+
+**Camera → Hand landmarks → Joint tracking → Gesture interaction**
+
+The objective is to understand how these approaches differ before moving toward more advanced robotics vision systems.

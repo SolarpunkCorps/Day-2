@@ -30,6 +30,12 @@ For YOLO:
 pip install ultralytics
 ```
 
+For hand tracking:
+
+```bash
+pip install mediapipe
+```
+
 ### Verify
 
 ```bash
@@ -294,6 +300,96 @@ Thresholding turns continuous intensity information into simpler regions.
 ### Learn
 
 A contour describes the boundary of a connected image region.
+
+---
+
+# `11_object_distance_estimation.py` — Distance Estimation
+
+### Why?
+
+- Object detection tells us where something is.
+- Distance estimation tells us how far away it is.
+- This is useful in robotics, camera calibration and mobile vision systems.
+
+### What it does
+
+- Loads a YOLO model.
+- Opens the webcam.
+- Detects objects in each frame.
+- Keeps only `cell phone` detections.
+- Measures the phone width in pixels.
+- Uses a simple distance formula.
+- Draws a bounding box around the phone.
+- Displays the distance in centimetres.
+
+### Key ideas
+
+- **`KNOWN_WIDTH`**
+  - The real width of the object in centimetres.
+
+- **`FOCAL_LENGTH`**
+  - A camera constant used to estimate distance.
+
+- **`pixel_width = x2 - x1`**
+  - Measures how large the object appears on the screen.
+
+- **Distance formula**
+  - Uses the known object size and pixel width to estimate depth.
+
+### Flow
+
+**Camera → YOLO detection → object width → distance estimate → label on frame**
+
+### Learn
+
+A camera sees pixels, but geometry can help convert that to real-world distance.
+
+---
+
+# `12_hand_tracking.py` — Hand Tracking
+
+### Why?
+
+- Many interfaces and systems require tracking human hands.
+- Gesture recognition and interaction often begin with hand landmarks.
+
+### What it does
+
+- Opens the webcam.
+- Creates a MediaPipe hand landmarker.
+- Converts the frame to RGB.
+- Detects hand landmarks.
+- Draws circles at each palm and finger point.
+- Connects the joints with lines.
+- Shows the live tracking result.
+
+### Key components
+
+- **`HandLandmarker`**
+  - Detects hands and key points.
+
+- **`mp.Image()`**
+  - Converts the OpenCV frame into MediaPipe format.
+
+- **`detect_for_video()`**
+  - Runs hand detection on each frame.
+
+- **`hand_landmarks`**
+  - Contains the 21 landmark positions of the hand.
+
+- **`cv2.circle()`**
+  - Draws each landmark.
+
+- **`cv2.line()`**
+  - Connects landmark points to form the hand skeleton.
+
+### Flow
+
+**Webcam → RGB frame → MediaPipe hand landmark detection → drawing on frame**
+
+### Learn
+
+Hand tracking is a practical computer-vision task that turns a live image into structured landmark data.
 
 ---
 

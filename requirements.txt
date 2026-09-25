@@ -30,3 +30,10 @@ numpy
 # - Loading pretrained YOLO models
 # - Detecting objects using a neural network
 ultralytics
+
+# MediaPipe
+# Used for:
+# - Hand detection
+# - Landmark tracking
+# - Gesture and hand pose analysis
+mediapipe
