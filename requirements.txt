@@ -1,0 +1,32 @@
+# ============================================================
+# Day 2 — Make the Machine See
+# Python Requirements
+# ============================================================
+
+# OpenCV
+# Used for:
+# - Reading images
+# - Displaying images
+# - Image processing
+# - Colour conversion
+# - Thresholding
+# - Contours
+# - Bounding boxes
+# - Webcam access
+# - Drawing on images
+opencv-python
+
+# NumPy
+# Used for:
+# - Creating HSV colour ranges
+# - Creating numerical arrays
+# - Creating colour masks
+# - Working with image data
+numpy
+
+# Ultralytics
+# Used for:
+# - YOLO object detection
+# - Loading pretrained YOLO models
+# - Detecting objects using a neural network
+ultralytics
