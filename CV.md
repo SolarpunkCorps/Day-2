@@ -749,6 +749,10 @@ This is the bridge between computer vision and robot control.
 
 It introduces the next level after colour-based detection.
 
+YOLO (You Only Look Once) is a deep-learning computer vision model designed to detect objects in images and video.
+
+It looks at an image and predicts what objects are present, where they are, and how confident it is about each detection.
+
 ### Why?
 
 The red detector asks:
@@ -758,6 +762,12 @@ The red detector asks:
 YOLO asks:
 
 **"Which learned object category is present, where is it, and how confident is the model?"**
+
+Unlike the red detector, YOLO does not depend on a manually defined colour range. It uses a neural network that has been trained on images containing different object categories.
+
+For example, instead of simply finding red pixels, YOLO can identify objects such as:
+
+person → bottle → chair → car → phone
 
 ### Install
 
@@ -784,13 +794,16 @@ pip install ultralytics
 A YOLO detection can provide:
 
 **Class**
+- The category of the detected object.
 - Example: person, bottle, phone, chair.
 
 **Bounding box**
 - Object location and size.
+- Tells us where the object is in the image.
 
 **Confidence**
 - Numerical confidence associated with the detection.
+- Indicates how strongly the model supports that detection.
 
 ### Classical vs AI
 
