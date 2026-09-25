@@ -747,7 +747,7 @@ This is the bridge between computer vision and robot control.
 
 # `10_yolo_object_detection.py` — AI Object Detection
 
-If this file is included in the Day 2 folder, it introduces the next level after colour-based detection.
+It introduces the next level after colour-based detection.
 
 ### Why?
 
