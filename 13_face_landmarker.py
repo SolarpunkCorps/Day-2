@@ -1,4 +1,4 @@
-# 12_hand_tracking.py
+# 13_face_landmarker.py
 
 import cv2
 import mediapipe as mp
@@ -10,25 +10,25 @@ import os
 # ============================================================
 
 BaseOptions = mp.tasks.BaseOptions
-HandLandmarker = mp.tasks.vision.HandLandmarker
-HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
+FaceLandmarker = mp.tasks.vision.FaceLandmarker
+FaceLandmarkerOptions = mp.tasks.vision.FaceLandmarkerOptions
 RunningMode = mp.tasks.vision.RunningMode
 
 
 # ============================================================
-# Find the model relative to THIS Python file
+# Find model relative to THIS Python file
 # ============================================================
 
 model_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "models",
-    "hand_landmarker.task"
+    "face_landmarker.task"
 )
 
 print("Model path:", model_path)
 
 if not os.path.exists(model_path):
-    print("ERROR: hand_landmarker.task not found!")
+    print("ERROR: face_landmarker.task not found!")
     print("Expected location:")
     print(model_path)
     exit()
@@ -37,17 +37,17 @@ print("Model found!")
 
 
 # ============================================================
-# Create Hand Landmarker
+# Create Face Landmarker
 # ============================================================
 
-options = HandLandmarkerOptions(
+options = FaceLandmarkerOptions(
     base_options=BaseOptions(
         model_asset_path=model_path
     ),
     running_mode=RunningMode.VIDEO,
-    num_hands=2,
-    min_hand_detection_confidence=0.5,
-    min_hand_presence_confidence=0.5,
+    num_faces=1,
+    min_face_detection_confidence=0.5,
+    min_face_presence_confidence=0.5,
     min_tracking_confidence=0.5
 )
 
@@ -64,10 +64,10 @@ if not camera.isOpened():
 
 
 # ============================================================
-# Create Hand Landmarker
+# Create Face Landmarker
 # ============================================================
 
-with HandLandmarker.create_from_options(options) as landmarker:
+with FaceLandmarker.create_from_options(options) as landmarker:
 
     frame_timestamp = 0
 
@@ -119,7 +119,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
 
         # ----------------------------------------------------
-        # Detect hands
+        # Detect face
         # ----------------------------------------------------
 
         results = landmarker.detect_for_video(
@@ -129,18 +129,14 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
 
         # ====================================================
-        # Draw detected hands
+        # Draw face landmarks
         # ====================================================
 
-        if results.hand_landmarks:
+        if results.face_landmarks:
 
-            for hand_landmarks in results.hand_landmarks:
+            for face_landmarks in results.face_landmarks:
 
-                # ------------------------------------------------
-                # Draw 21 landmarks
-                # ------------------------------------------------
-
-                for landmark in hand_landmarks:
+                for landmark in face_landmarks:
 
                     x = int(
                         landmark.x * frame.shape[1]
@@ -153,78 +149,9 @@ with HandLandmarker.create_from_options(options) as landmarker:
                     cv2.circle(
                         frame,
                         (x, y),
-                        5,
+                        1,
                         (0, 255, 0),
                         -1
-                    )
-
-
-                # ------------------------------------------------
-                # Hand connections
-                # ------------------------------------------------
-
-                connections = [
-                    (0, 1),
-                    (1, 2),
-                    (2, 3),
-                    (3, 4),
-
-                    (0, 5),
-                    (5, 6),
-                    (6, 7),
-                    (7, 8),
-
-                    (5, 9),
-                    (9, 10),
-                    (10, 11),
-                    (11, 12),
-
-                    (9, 13),
-                    (13, 14),
-                    (14, 15),
-                    (15, 16),
-
-                    (13, 17),
-                    (17, 18),
-                    (18, 19),
-                    (19, 20),
-
-                    (0, 17)
-                ]
-
-
-                # ------------------------------------------------
-                # Draw connections
-                # ------------------------------------------------
-
-                for start, end in connections:
-
-                    x1 = int(
-                        hand_landmarks[start].x
-                        * frame.shape[1]
-                    )
-
-                    y1 = int(
-                        hand_landmarks[start].y
-                        * frame.shape[0]
-                    )
-
-                    x2 = int(
-                        hand_landmarks[end].x
-                        * frame.shape[1]
-                    )
-
-                    y2 = int(
-                        hand_landmarks[end].y
-                        * frame.shape[0]
-                    )
-
-                    cv2.line(
-                        frame,
-                        (x1, y1),
-                        (x2, y2),
-                        (0, 255, 0),
-                        2
                     )
 
 
@@ -233,7 +160,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
         # ====================================================
 
         cv2.imshow(
-            "MediaPipe Hand Tracking",
+            "MediaPipe Face Landmarker",
             frame
         )
 

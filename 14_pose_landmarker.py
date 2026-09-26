@@ -1,4 +1,4 @@
-# 12_hand_tracking.py
+# 14_pose_landmarker.py
 
 import cv2
 import mediapipe as mp
@@ -10,25 +10,25 @@ import os
 # ============================================================
 
 BaseOptions = mp.tasks.BaseOptions
-HandLandmarker = mp.tasks.vision.HandLandmarker
-HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
+PoseLandmarker = mp.tasks.vision.PoseLandmarker
+PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 RunningMode = mp.tasks.vision.RunningMode
 
 
 # ============================================================
-# Find the model relative to THIS Python file
+# Find model relative to THIS Python file
 # ============================================================
 
 model_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "models",
-    "hand_landmarker.task"
+    "pose_landmarker.task"
 )
 
 print("Model path:", model_path)
 
 if not os.path.exists(model_path):
-    print("ERROR: hand_landmarker.task not found!")
+    print("ERROR: pose_landmarker.task not found!")
     print("Expected location:")
     print(model_path)
     exit()
@@ -37,17 +37,17 @@ print("Model found!")
 
 
 # ============================================================
-# Create Hand Landmarker
+# Create Pose Landmarker
 # ============================================================
 
-options = HandLandmarkerOptions(
+options = PoseLandmarkerOptions(
     base_options=BaseOptions(
         model_asset_path=model_path
     ),
     running_mode=RunningMode.VIDEO,
-    num_hands=2,
-    min_hand_detection_confidence=0.5,
-    min_hand_presence_confidence=0.5,
+    num_poses=1,
+    min_pose_detection_confidence=0.5,
+    min_pose_presence_confidence=0.5,
     min_tracking_confidence=0.5
 )
 
@@ -64,10 +64,59 @@ if not camera.isOpened():
 
 
 # ============================================================
-# Create Hand Landmarker
+# Pose connections
 # ============================================================
 
-with HandLandmarker.create_from_options(options) as landmarker:
+connections = [
+    # Face
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 7),
+    (0, 4),
+    (4, 5),
+    (5, 6),
+    (6, 8),
+
+    # Torso
+    (11, 12),
+    (11, 23),
+    (12, 24),
+    (23, 24),
+
+    # Left arm
+    (11, 13),
+    (13, 15),
+    (15, 17),
+    (15, 19),
+    (15, 21),
+
+    # Right arm
+    (12, 14),
+    (14, 16),
+    (16, 18),
+    (16, 20),
+    (16, 22),
+
+    # Left leg
+    (23, 25),
+    (25, 27),
+    (27, 29),
+    (27, 31),
+
+    # Right leg
+    (24, 26),
+    (26, 28),
+    (28, 30),
+    (28, 32)
+]
+
+
+# ============================================================
+# Create Pose Landmarker
+# ============================================================
+
+with PoseLandmarker.create_from_options(options) as landmarker:
 
     frame_timestamp = 0
 
@@ -119,7 +168,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
 
         # ----------------------------------------------------
-        # Detect hands
+        # Detect pose
         # ----------------------------------------------------
 
         results = landmarker.detect_for_video(
@@ -129,18 +178,18 @@ with HandLandmarker.create_from_options(options) as landmarker:
 
 
         # ====================================================
-        # Draw detected hands
+        # Draw pose
         # ====================================================
 
-        if results.hand_landmarks:
+        if results.pose_landmarks:
 
-            for hand_landmarks in results.hand_landmarks:
+            for pose_landmarks in results.pose_landmarks:
 
                 # ------------------------------------------------
-                # Draw 21 landmarks
+                # Draw landmarks
                 # ------------------------------------------------
 
-                for landmark in hand_landmarks:
+                for landmark in pose_landmarks:
 
                     x = int(
                         landmark.x * frame.shape[1]
@@ -150,47 +199,19 @@ with HandLandmarker.create_from_options(options) as landmarker:
                         landmark.y * frame.shape[0]
                     )
 
-                    cv2.circle(
-                        frame,
-                        (x, y),
-                        5,
-                        (0, 255, 0),
-                        -1
-                    )
+                    # Only draw landmarks inside frame
+                    if (
+                        0 <= x < frame.shape[1]
+                        and 0 <= y < frame.shape[0]
+                    ):
 
-
-                # ------------------------------------------------
-                # Hand connections
-                # ------------------------------------------------
-
-                connections = [
-                    (0, 1),
-                    (1, 2),
-                    (2, 3),
-                    (3, 4),
-
-                    (0, 5),
-                    (5, 6),
-                    (6, 7),
-                    (7, 8),
-
-                    (5, 9),
-                    (9, 10),
-                    (10, 11),
-                    (11, 12),
-
-                    (9, 13),
-                    (13, 14),
-                    (14, 15),
-                    (15, 16),
-
-                    (13, 17),
-                    (17, 18),
-                    (18, 19),
-                    (19, 20),
-
-                    (0, 17)
-                ]
+                        cv2.circle(
+                            frame,
+                            (x, y),
+                            5,
+                            (0, 255, 0),
+                            -1
+                        )
 
 
                 # ------------------------------------------------
@@ -200,22 +221,22 @@ with HandLandmarker.create_from_options(options) as landmarker:
                 for start, end in connections:
 
                     x1 = int(
-                        hand_landmarks[start].x
+                        pose_landmarks[start].x
                         * frame.shape[1]
                     )
 
                     y1 = int(
-                        hand_landmarks[start].y
+                        pose_landmarks[start].y
                         * frame.shape[0]
                     )
 
                     x2 = int(
-                        hand_landmarks[end].x
+                        pose_landmarks[end].x
                         * frame.shape[1]
                     )
 
                     y2 = int(
-                        hand_landmarks[end].y
+                        pose_landmarks[end].y
                         * frame.shape[0]
                     )
 
@@ -233,7 +254,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
         # ====================================================
 
         cv2.imshow(
-            "MediaPipe Hand Tracking",
+            "MediaPipe Pose Landmarker",
             frame
         )
 
